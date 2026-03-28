@@ -1,0 +1,181 @@
+import { HMSReactiveStore, selectPeers, selectLocalPeer, HMSRoomState, selectRoomState } from '@100mslive/hms-video-store';
+
+/* @dial-wtf/client - Universal TypeScript SDK */
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var HMSMediaProvider = class {
+  constructor() {
+    __publicField(this, "hmsStore");
+    __publicField(this, "hmsActions");
+    __publicField(this, "listeners", /* @__PURE__ */ new Map());
+    __publicField(this, "unsubscribers", []);
+    __publicField(this, "connectionState", "disconnected");
+    const hms = new HMSReactiveStore();
+    this.hmsStore = hms.getStore();
+    this.hmsActions = hms.getActions();
+  }
+  // -- Connection lifecycle ---------------------------------------------------
+  async connect(credentials, config) {
+    this.connectionState = "connecting";
+    this.emit("connection-state-changed", { state: "connecting" });
+    try {
+      await this.hmsActions.join({
+        authToken: credentials.authToken,
+        userName: credentials.userName,
+        settings: {
+          isAudioMuted: (config == null ? void 0 : config.initialAudio) === false,
+          isVideoMuted: (config == null ? void 0 : config.initialVideo) !== true
+        }
+      });
+      this.connectionState = "connected";
+      this.emit("connection-state-changed", { state: "connected" });
+      this.subscribeToStoreUpdates();
+    } catch (err) {
+      this.connectionState = "failed";
+      this.emit("connection-state-changed", { state: "failed" });
+      this.emit("error", {
+        code: "HMS_JOIN_FAILED",
+        message: err instanceof Error ? err.message : String(err)
+      });
+      throw err;
+    }
+  }
+  async disconnect() {
+    this.cleanupSubscriptions();
+    try {
+      await this.hmsActions.leave();
+    } finally {
+      this.connectionState = "disconnected";
+      this.emit("connection-state-changed", { state: "disconnected" });
+    }
+  }
+  getConnectionState() {
+    return this.connectionState;
+  }
+  // -- Local track controls ---------------------------------------------------
+  async setLocalAudioEnabled(enabled) {
+    await this.hmsActions.setLocalAudioEnabled(enabled);
+  }
+  async setLocalVideoEnabled(enabled) {
+    await this.hmsActions.setLocalVideoEnabled(enabled);
+  }
+  async startScreenShare() {
+    await this.hmsActions.setScreenShareEnabled(true);
+  }
+  async stopScreenShare() {
+    await this.hmsActions.setScreenShareEnabled(false);
+  }
+  // -- Peers & tracks ---------------------------------------------------------
+  getPeers() {
+    const hmsPeers = this.hmsStore.getState(selectPeers);
+    return hmsPeers.map((p) => this.mapPeer(p));
+  }
+  getLocalPeer() {
+    const localPeer = this.hmsStore.getState(selectLocalPeer);
+    return localPeer ? this.mapPeer(localPeer) : null;
+  }
+  // -- Device management ------------------------------------------------------
+  async getAudioDevices() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === "audioinput");
+  }
+  async getVideoDevices() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === "videoinput");
+  }
+  async setAudioDevice(deviceId) {
+    await this.hmsActions.setAudioSettings({ deviceId });
+  }
+  async setVideoDevice(deviceId) {
+    await this.hmsActions.setVideoSettings({ deviceId });
+  }
+  // -- Events -----------------------------------------------------------------
+  on(event, callback) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, /* @__PURE__ */ new Set());
+    }
+    this.listeners.get(event).add(callback);
+  }
+  off(event, callback) {
+    var _a;
+    (_a = this.listeners.get(event)) == null ? void 0 : _a.delete(callback);
+  }
+  // -- Private helpers --------------------------------------------------------
+  emit(event, payload) {
+    const callbacks = this.listeners.get(event);
+    if (!callbacks) return;
+    for (const cb of callbacks) {
+      try {
+        cb(payload);
+      } catch (err) {
+        console.warn(`[HMSMediaProvider] Error in ${event} listener:`, err);
+      }
+    }
+  }
+  subscribeToStoreUpdates() {
+    let previousPeerIds = /* @__PURE__ */ new Set();
+    const unsubPeers = this.hmsStore.subscribe((peers) => {
+      const currentPeerIds = new Set(peers.map((p) => p.id));
+      for (const peer of peers) {
+        if (!previousPeerIds.has(peer.id)) {
+          this.emit("peer-joined", { peer: this.mapPeer(peer) });
+        }
+      }
+      for (const prevId of previousPeerIds) {
+        if (!currentPeerIds.has(prevId)) {
+          this.emit("peer-left", {
+            peer: { id: prevId, name: "", role: "", isLocal: false }
+          });
+        }
+      }
+      previousPeerIds = currentPeerIds;
+    }, selectPeers);
+    this.unsubscribers.push(unsubPeers);
+    const unsubRoom = this.hmsStore.subscribe((roomState) => {
+      if (roomState === HMSRoomState.Reconnecting) {
+        this.connectionState = "reconnecting";
+        this.emit("connection-state-changed", { state: "reconnecting" });
+      } else if (roomState === HMSRoomState.Connected && this.connectionState === "reconnecting") {
+        this.connectionState = "connected";
+        this.emit("connection-state-changed", { state: "connected" });
+      } else if (roomState === HMSRoomState.Disconnected || roomState === HMSRoomState.Failed) {
+        const state = roomState === HMSRoomState.Failed ? "failed" : "disconnected";
+        this.connectionState = state;
+        this.emit("connection-state-changed", { state });
+      }
+    }, selectRoomState);
+    this.unsubscribers.push(unsubRoom);
+  }
+  cleanupSubscriptions() {
+    for (const unsub of this.unsubscribers) {
+      unsub();
+    }
+    this.unsubscribers = [];
+  }
+  mapPeer(hmsPeer) {
+    var _a;
+    return {
+      id: hmsPeer.id,
+      name: hmsPeer.name,
+      role: (_a = hmsPeer.roleName) != null ? _a : "",
+      isLocal: hmsPeer.isLocal,
+      audioTrack: hmsPeer.audioTrack ? this.mapTrack(hmsPeer.audioTrack, hmsPeer.id, "audio") : void 0,
+      videoTrack: hmsPeer.videoTrack ? this.mapTrack(hmsPeer.videoTrack, hmsPeer.id, "video") : void 0,
+      screenTrack: void 0
+    };
+  }
+  mapTrack(trackId, peerId, kind) {
+    return {
+      id: trackId,
+      peerId,
+      kind,
+      source: "regular",
+      enabled: true
+    };
+  }
+};
+
+export { HMSMediaProvider };
+//# sourceMappingURL=hms.js.map
+//# sourceMappingURL=hms.js.map

@@ -1,0 +1,61 @@
+{
+  "name": "@dial-wtf/client",
+  "version": "0.3.0",
+  "description": "Dial SDK client - Universal TypeScript SDK for wallet-to-wallet communication",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./media": {
+      "import": {
+        "types": "./dist/media/index.d.ts",
+        "default": "./dist/media/index.js"
+      },
+      "require": {
+        "types": "./dist/media/index.d.cts",
+        "default": "./dist/media/index.cjs"
+      }
+    },
+    "./media/hms": {
+      "import": {
+        "types": "./dist/media/hms.d.ts",
+        "default": "./dist/media/hms.js"
+      },
+      "require": {
+        "types": "./dist/media/hms.d.cts",
+        "default": "./dist/media/hms.cjs"
+      }
+    }
+  },
+  "sideEffects": false,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@dial-wtf/core": "file:../dial-core",
+    "eventemitter3": "^5.0.1"
+  },
+  "peerDependencies": {
+    "@100mslive/hms-video-store": ">=0.12.0",
+    "siwe": "^2.1.4"
+  },
+  "peerDependenciesMeta": {
+    "siwe": {
+      "optional": true
+    },
+    "@100mslive/hms-video-store": {
+      "optional": true
+    }
+  }
+}
