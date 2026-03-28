@@ -1,16 +1,47 @@
-import { TimeoutError, AuthError, ApiError, NotFoundError, RateLimitError, PermissionDeniedError, NetworkError, ValidationError, BrowserStorage, MemoryStorage, IS_BROWSER, SDK_VERSION, DEFAULT_NETWORK, API_BASE_URLS, getFetch, detectEnvironment } from '@dial-wtf/core';
+import { TimeoutError, AuthError, ApiError, NotFoundError, RateLimitError, PermissionDeniedError, NetworkError, ValidationError, BrowserStorage, MemoryStorage, IS_BROWSER, DEFAULT_NETWORK, API_BASE_URLS, getFetch, detectEnvironment, SDK_VERSION } from '@dial-wtf/core';
 export { API_BASE_URLS, ApiError, AuthError, BrowserStorage, DEFAULT_NETWORK, DialError, ENVIRONMENT, IS_BROWSER, IS_BROWSER_LIKE, IS_EXTENSION, IS_NODE, MemoryStorage, NetworkError, NotFoundError, PermissionDeniedError, RateLimitError, SDK_VERSION, SessionExpiredError, TimeoutError, ValidationError, detectEnvironment, getFetch } from '@dial-wtf/core';
 import EventEmitter3 from 'eventemitter3';
 
 /* @dial-wtf/client - Universal TypeScript SDK */
-
+var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    }
+  return a;
+};
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+var __objRest = (source, exclude) => {
+  var target = {};
+  for (var prop in source)
+    if (__hasOwnProp.call(source, prop) && exclude.indexOf(prop) < 0)
+      target[prop] = source[prop];
+  if (source != null && __getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(source)) {
+      if (exclude.indexOf(prop) < 0 && __propIsEnum.call(source, prop))
+        target[prop] = source[prop];
+    }
+  return target;
+};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var HttpClient = class {
-  config;
-  authToken;
-  sessionRefresher;
-  refreshPromise;
-  inflightGets = /* @__PURE__ */ new Map();
   constructor(config) {
+    __publicField(this, "config");
+    __publicField(this, "authToken");
+    __publicField(this, "sessionRefresher");
+    __publicField(this, "refreshPromise");
+    __publicField(this, "inflightGets", /* @__PURE__ */ new Map());
     this.config = config;
   }
   setAuthToken(token) {
@@ -101,7 +132,7 @@ var HttpClient = class {
     const url = this.buildUrl(endpoint);
     const requestHeaders = this.buildHeaders(headers);
     const timeoutController = new AbortController();
-    const timeoutMs = timeout ?? this.config.timeout;
+    const timeoutMs = timeout != null ? timeout : this.config.timeout;
     const timeoutId = setTimeout(() => timeoutController.abort(), timeoutMs);
     const signals = [timeoutController.signal];
     if (signal) signals.push(signal);
@@ -120,7 +151,7 @@ var HttpClient = class {
       cleanup();
       const contentType = response.headers.get("content-type");
       let data;
-      if (contentType?.includes("application/json")) {
+      if (contentType == null ? void 0 : contentType.includes("application/json")) {
         data = await response.json();
       } else {
         data = await response.text();
@@ -213,15 +244,13 @@ var HttpClient = class {
     if (params) {
       const urlParams = this.toUrlParams(params);
       const url = this.buildUrl(endpoint, urlParams);
-      return this.request(url.replace(this.config.baseUrl, ""), {
-        ...options,
+      return this.request(url.replace(this.config.baseUrl, ""), __spreadProps(__spreadValues({}, options), {
         method: "GET"
-      });
+      }));
     }
-    return this.request(endpoint, {
-      ...options,
+    return this.request(endpoint, __spreadProps(__spreadValues({}, options), {
       method: "GET"
-    });
+    }));
   }
   toUrlParams(params) {
     const urlParams = {};
@@ -239,39 +268,35 @@ var HttpClient = class {
     return urlParams;
   }
   async post(endpoint, body, options) {
-    return this.request(endpoint, {
-      ...options,
+    return this.request(endpoint, __spreadProps(__spreadValues({}, options), {
       method: "POST",
       body
-    });
+    }));
   }
   async put(endpoint, body, options) {
-    return this.request(endpoint, {
-      ...options,
+    return this.request(endpoint, __spreadProps(__spreadValues({}, options), {
       method: "PUT",
       body
-    });
+    }));
   }
   async patch(endpoint, body, options) {
-    return this.request(endpoint, {
-      ...options,
+    return this.request(endpoint, __spreadProps(__spreadValues({}, options), {
       method: "PATCH",
       body
-    });
+    }));
   }
   async delete(endpoint, options) {
-    return this.request(endpoint, {
-      ...options,
+    return this.request(endpoint, __spreadProps(__spreadValues({}, options), {
       method: "DELETE"
-    });
+    }));
   }
 };
 
 // src/services/base.ts
 var BaseService = class {
-  http;
-  apiVersion;
   constructor(http, apiVersion = "v1") {
+    __publicField(this, "http");
+    __publicField(this, "apiVersion");
     this.http = http;
     this.apiVersion = apiVersion;
   }
@@ -308,7 +333,7 @@ var AuthService = class extends BaseService {
         chainId: siweMsg.chainId,
         nonce: siweMsg.nonce
       };
-    } catch {
+    } catch (e) {
       parsed = this.parseSiweFields(message);
     }
     const response = await this.http.post(
@@ -358,7 +383,7 @@ var AuthService = class extends BaseService {
         this.rawEndpoint("/auth/validate")
       );
       return response.valid;
-    } catch {
+    } catch (e) {
       return false;
     }
   }
@@ -410,10 +435,10 @@ var PartyLinesService = class extends BaseService {
   }
   async query(options) {
     return this.http.get(this.endpoint("/party-lines"), {
-      isActive: options?.isActive,
-      search: options?.search,
-      limit: options?.limit,
-      offset: options?.offset
+      isActive: options == null ? void 0 : options.isActive,
+      search: options == null ? void 0 : options.search,
+      limit: options == null ? void 0 : options.limit,
+      offset: options == null ? void 0 : options.offset
     });
   }
   async getAll(options) {
@@ -421,11 +446,11 @@ var PartyLinesService = class extends BaseService {
     return response.partyLines;
   }
   async getActive(options) {
-    const response = await this.query({ ...options, isActive: true });
+    const response = await this.query(__spreadProps(__spreadValues({}, options), { isActive: true }));
     return response.partyLines;
   }
   async search(searchTerm, options) {
-    const response = await this.query({ ...options, search: searchTerm });
+    const response = await this.query(__spreadProps(__spreadValues({}, options), { search: searchTerm }));
     return response.partyLines;
   }
   async create(options) {
@@ -493,14 +518,14 @@ var RegistryService = class extends BaseService {
       return await this.http.get(
         this.endpoint(`/registry/ens/resolve/${address}`)
       );
-    } catch {
+    } catch (e) {
       return null;
     }
   }
 };
 var DialEventEmitter = class {
-  emitter;
   constructor() {
+    __publicField(this, "emitter");
     this.emitter = new EventEmitter3();
   }
   /**
@@ -551,10 +576,10 @@ var DialEventEmitter = class {
 
 // src/services/calls.ts
 var CallsService = class extends BaseService {
-  localStream;
-  remoteStreams = /* @__PURE__ */ new Map();
   constructor(http) {
     super(http);
+    __publicField(this, "localStream");
+    __publicField(this, "remoteStreams", /* @__PURE__ */ new Map());
   }
   async start(options) {
     return this.http.post(this.endpoint("/calls"), options);
@@ -574,7 +599,7 @@ var CallsService = class extends BaseService {
   async getHistory(params) {
     const response = await this.http.get(
       this.endpoint("/calls"),
-      params ? { ...params } : void 0
+      params ? __spreadValues({}, params) : void 0
     );
     if (!Array.isArray(response) && "calls" in response) {
       return response.calls;
@@ -660,13 +685,14 @@ var ChatService = class extends BaseService {
     super(http);
   }
   async send(options) {
-    if (options.media?.file) {
+    var _a, _b;
+    if ((_a = options.media) == null ? void 0 : _a.file) {
       return this.sendWithMedia(options);
     }
     return this.http.post(this.endpoint("/chat/messages"), {
       to: options.to,
       content: options.content,
-      type: options.type ?? "text",
+      type: (_b = options.type) != null ? _b : "text",
       threadId: options.threadId,
       provider: options.provider,
       encrypted: options.encrypted,
@@ -675,9 +701,10 @@ var ChatService = class extends BaseService {
     });
   }
   async sendWithMedia(options) {
+    var _a, _b, _c;
     return this.http.post(this.endpoint("/chat/messages"), {
       to: options.to,
-      content: options.media?.caption ?? options.content,
+      content: (_b = (_a = options.media) == null ? void 0 : _a.caption) != null ? _b : options.content,
       type: options.type,
       threadId: options.threadId,
       provider: options.provider,
@@ -685,11 +712,11 @@ var ChatService = class extends BaseService {
       replyTo: options.replyTo,
       mentions: options.mentions,
       hasMedia: true,
-      mediaDuration: options.media?.duration
+      mediaDuration: (_c = options.media) == null ? void 0 : _c.duration
     });
   }
   async listThreads(params) {
-    return this.http.get(this.endpoint("/chat/threads"), params ? { ...params } : void 0);
+    return this.http.get(this.endpoint("/chat/threads"), params ? __spreadValues({}, params) : void 0);
   }
   /** @deprecated Use listThreads() */
   async getConversations(params) {
@@ -707,11 +734,12 @@ var ChatService = class extends BaseService {
     return this.getThread(options);
   }
   async listMessages(options) {
+    var _a, _b;
     return this.http.get(this.endpoint("/chat/messages"), {
       with: options.with,
       threadId: options.threadId,
-      before: options.before?.toString(),
-      after: options.after?.toString(),
+      before: (_a = options.before) == null ? void 0 : _a.toString(),
+      after: (_b = options.after) == null ? void 0 : _b.toString(),
       limit: options.limit,
       offset: options.offset
     });
@@ -746,7 +774,7 @@ var ChatService = class extends BaseService {
     return this.http.post(this.endpoint("/chat/threads/managed"), options);
   }
   async listManagedThreads(options) {
-    return this.http.get(this.endpoint("/chat/threads/managed"), options?.filters);
+    return this.http.get(this.endpoint("/chat/threads/managed"), options == null ? void 0 : options.filters);
   }
   async archiveThread(threadId) {
     await this.http.post(this.endpoint(`/chat/threads/${threadId}/archive`));
@@ -784,7 +812,7 @@ var ChatService = class extends BaseService {
   }
   async delete(messageId, options) {
     await this.http.delete(this.endpoint(`/chat/messages/${messageId}`), {
-      headers: options?.forEveryone ? { "X-Delete-For-Everyone": "true" } : void 0
+      headers: (options == null ? void 0 : options.forEveryone) ? { "X-Delete-For-Everyone": "true" } : void 0
     });
   }
   async search(options) {
@@ -810,7 +838,7 @@ var ProfileService = class extends BaseService {
     return this.http.post(this.endpoint("/profile/avatar"), { hasAvatar: true });
   }
   async setStatus(status, options) {
-    await this.http.post(this.endpoint("/profile/status"), { status, customMessage: options?.customMessage });
+    await this.http.post(this.endpoint("/profile/status"), { status, customMessage: options == null ? void 0 : options.customMessage });
   }
   async getStatus() {
     return this.http.get(this.endpoint("/profile/status"));
@@ -825,7 +853,7 @@ var ProfileService = class extends BaseService {
     await this.http.patch(this.endpoint("/profile/notifications"), settings);
   }
   async enableDoNotDisturb(options) {
-    await this.http.post(this.endpoint("/profile/dnd"), { enabled: true, ...options });
+    await this.http.post(this.endpoint("/profile/dnd"), __spreadValues({ enabled: true }, options));
   }
   async disableDoNotDisturb() {
     await this.http.post(this.endpoint("/profile/dnd"), { enabled: false });
@@ -860,7 +888,7 @@ var ProfileService = class extends BaseService {
    * methods bypass ContactsBook's cache and event system, causing stale reads.
    */
   async getContacts(params) {
-    return this.http.get(this.endpoint("/profile/contacts"), params ? { ...params } : void 0);
+    return this.http.get(this.endpoint("/profile/contacts"), params ? __spreadValues({}, params) : void 0);
   }
   /**
    * @deprecated Use `userDialer.contacts.update()` instead. ProfileService contact
@@ -893,7 +921,7 @@ var VoicemailService = class extends BaseService {
     return this.startRecording(options);
   }
   async getAll(options) {
-    return this.http.get(this.endpoint("/voicemails"), { unreadOnly: options?.unreadOnly, limit: options?.limit, offset: options?.offset });
+    return this.http.get(this.endpoint("/voicemails"), { unreadOnly: options == null ? void 0 : options.unreadOnly, limit: options == null ? void 0 : options.limit, offset: options == null ? void 0 : options.offset });
   }
   async get(voicemailId) {
     return this.http.get(this.endpoint(`/voicemails/${voicemailId}`));
@@ -944,10 +972,10 @@ var VoicemailService = class extends BaseService {
 
 // src/services/conference.ts
 var ConferenceService = class extends BaseService {
-  participantStreams = /* @__PURE__ */ new Map();
-  _mediaProvider = null;
   constructor(http) {
     super(http);
+    __publicField(this, "participantStreams", /* @__PURE__ */ new Map());
+    __publicField(this, "_mediaProvider", null);
   }
   setMediaProvider(provider) {
     this._mediaProvider = provider;
@@ -980,8 +1008,9 @@ var ConferenceService = class extends BaseService {
     return this.normalizeRoomResponse(response);
   }
   normalizeRoomResponse(response) {
-    const { token, role, ...rest } = response;
-    return { ...rest, mediaToken: rest.mediaToken ?? token, mediaRole: rest.mediaRole ?? role };
+    var _b, _c;
+    const _a = response, { token, role } = _a, rest = __objRest(_a, ["token", "role"]);
+    return __spreadProps(__spreadValues({}, rest), { mediaToken: (_b = rest.mediaToken) != null ? _b : token, mediaRole: (_c = rest.mediaRole) != null ? _c : role });
   }
   async leave(roomId) {
     await this.http.post(this.endpoint(`/conference/rooms/${roomId}/leave`));
@@ -1040,7 +1069,7 @@ var ConferenceService = class extends BaseService {
     return this.http.post(this.endpoint(`/conference/rooms/${roomId}/messages`), options);
   }
   async setLayout(roomId, layout, options) {
-    await this.http.post(this.endpoint(`/conference/rooms/${roomId}/layout`), { layout, ...options });
+    await this.http.post(this.endpoint(`/conference/rooms/${roomId}/layout`), __spreadValues({ layout }, options));
   }
   async end(roomId) {
     await this.http.post(this.endpoint(`/conference/rooms/${roomId}/end`));
@@ -1096,13 +1125,13 @@ var ConferenceService = class extends BaseService {
   }
 };
 var ContactsBook = class {
-  provider;
-  emitter = new EventEmitter3();
-  cache = /* @__PURE__ */ new Map();
-  loaded = false;
   constructor(provider, config) {
+    __publicField(this, "provider");
+    __publicField(this, "emitter", new EventEmitter3());
+    __publicField(this, "cache", /* @__PURE__ */ new Map());
+    __publicField(this, "loaded", false);
     this.provider = provider;
-    if (config?.autoLoad === true) {
+    if ((config == null ? void 0 : config.autoLoad) === true) {
       this.load().catch(() => {
       });
     }
@@ -1122,8 +1151,9 @@ var ContactsBook = class {
     return Array.from(this.cache.values());
   }
   async get(walletAddress) {
+    var _a;
     if (!this.loaded) await this.load();
-    return this.cache.get(walletAddress.toLowerCase()) ?? null;
+    return (_a = this.cache.get(walletAddress.toLowerCase())) != null ? _a : null;
   }
   async has(walletAddress) {
     if (!this.loaded) await this.load();
@@ -1164,31 +1194,34 @@ var ContactsBook = class {
   }
 };
 var LocalContactsBookProvider = class {
-  storageKey;
-  storage;
-  cache = /* @__PURE__ */ new Map();
-  loaded = false;
   constructor(options) {
-    const prefix = options.storagePrefix ?? "dial_contacts";
+    __publicField(this, "storageKey");
+    __publicField(this, "storage");
+    __publicField(this, "cache", /* @__PURE__ */ new Map());
+    __publicField(this, "loaded", false);
+    var _a, _b;
+    const prefix = (_a = options.storagePrefix) != null ? _a : "dial_contacts";
     this.storageKey = `${prefix}:${options.walletAddress.toLowerCase()}`;
-    this.storage = options.storage ?? (IS_BROWSER ? new BrowserStorage() : new MemoryStorage());
+    this.storage = (_b = options.storage) != null ? _b : IS_BROWSER ? new BrowserStorage() : new MemoryStorage();
   }
   async getAll() {
     await this.ensureLoaded();
     return Array.from(this.cache.values());
   }
   async get(walletAddress) {
+    var _a;
     await this.ensureLoaded();
-    return this.cache.get(walletAddress.toLowerCase()) ?? null;
+    return (_a = this.cache.get(walletAddress.toLowerCase())) != null ? _a : null;
   }
   async add(options) {
+    var _a;
     await this.ensureLoaded();
     const key = options.walletAddress.toLowerCase();
     const contact = {
       walletAddress: options.walletAddress,
       profile: {
         walletAddress: options.walletAddress,
-        displayName: options.nickname ?? options.walletAddress,
+        displayName: (_a = options.nickname) != null ? _a : options.walletAddress,
         status: "offline",
         createdAt: (/* @__PURE__ */ new Date()).toISOString(),
         updatedAt: (/* @__PURE__ */ new Date()).toISOString()
@@ -1202,18 +1235,18 @@ var LocalContactsBookProvider = class {
     return contact;
   }
   async update(options) {
+    var _a, _b, _c;
     await this.ensureLoaded();
     const key = options.walletAddress.toLowerCase();
     const existing = this.cache.get(key);
     if (!existing) {
       throw new NotFoundError(`Contact ${options.walletAddress} not found`);
     }
-    const updated = {
-      ...existing,
-      nickname: options.nickname ?? existing.nickname,
-      tags: options.tags ?? existing.tags,
-      notes: options.notes ?? existing.notes
-    };
+    const updated = __spreadProps(__spreadValues({}, existing), {
+      nickname: (_a = options.nickname) != null ? _a : existing.nickname,
+      tags: (_b = options.tags) != null ? _b : existing.tags,
+      notes: (_c = options.notes) != null ? _c : existing.notes
+    });
     this.cache.set(key, updated);
     await this.persist();
     return updated;
@@ -1238,7 +1271,7 @@ var LocalContactsBookProvider = class {
           this.cache.set(c.walletAddress.toLowerCase(), c);
         }
       }
-    } catch {
+    } catch (e) {
       this.cache.clear();
     }
   }
@@ -1246,141 +1279,141 @@ var LocalContactsBookProvider = class {
     try {
       const contacts = Array.from(this.cache.values());
       await this.storage.setItem(this.storageKey, JSON.stringify(contacts));
-    } catch {
+    } catch (e) {
     }
   }
 };
 
 // src/client/user-dialer.ts
 var UserDialer = class {
-  http;
-  session;
-  events;
-  /** @internal */
-  authService;
-  /**
-   * Calls service - wallet-to-wallet audio/video calling
-   *
-   * @remarks
-   * - `start()`, `answer()`, `decline()`, `end()` - Isomorphic
-   * - `getLocalStream()`, `getRemoteStream()` - Browser only
-   *
-   * @example
-   * ```typescript
-   * // Start a video call
-   * const call = await userDialer.calls.start({
-   *   to: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-   *   type: 'video'
-   * });
-   * ```
-   */
-  calls;
-  /**
-   * Chat service - E2EE DMs and Groups
-   *
-   * @remarks
-   * All methods are isomorphic and work in both browser and Node.js.
-   * Uses Signal Protocol for DMs and Sender Keys for Groups.
-   *
-   * @example
-   * ```typescript
-   * // Send a message
-   * await userDialer.chat.send({
-   *   to: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
-   *   content: 'Hello!'
-   * });
-   *
-   * // Create a DM
-   * const dm = await userDialer.chat.createDM({
-   *   otherDialUserId: '0x...'
-   * });
-   *
-   * // Create a group
-   * const group = await userDialer.chat.createGroup({
-   *   name: 'My Group',
-   *   participants: ['0x...', '0x...']
-   * });
-   * ```
-   */
-  chat;
-  /**
-   * Messages service - wallet-to-wallet messaging
-   * @deprecated Use chat instead
-   */
-  messages;
-  /**
-   * Profile service - manage user profiles
-   *
-   * @remarks
-   * All methods are isomorphic except `updateAvatar()` which uses File API.
-   *
-   * @example
-   * ```typescript
-   * // Get current profile
-   * const profile = await userDialer.profile.get();
-   * ```
-   */
-  profile;
-  /**
-   * Voicemail service - manage voicemails
-   *
-   * @remarks
-   * - `getAll()`, `get()`, `markAsRead()`, `transcribe()` - Isomorphic
-   * - `download()` - Browser only (uses Blob)
-   *
-   * @example
-   * ```typescript
-   * // Get all voicemails
-   * const voicemails = await userDialer.voicemail.getAll();
-   * ```
-   */
-  voicemail;
-  /**
-   * Conference service - video conferencing
-   *
-   * @remarks
-   * - Room management methods are isomorphic
-   * - Media streaming methods are browser only
-   *
-   * @example
-   * ```typescript
-   * // Create a conference room
-   * const room = await userDialer.conference.create({
-   *   name: 'Team Standup',
-   *   maxParticipants: 10
-   * });
-   * ```
-   */
-  conference;
-  /**
-   * Contacts book - manage user contacts
-   *
-   * @remarks
-   * Uses LocalContactsBookProvider by default (localStorage in browser).
-   * Supply a custom IContactsBookProvider via `setContactsProvider()` to
-   * use API-backed or custom storage.
-   *
-   * @example
-   * ```typescript
-   * // Add a contact
-   * await userDialer.contacts.add({ walletAddress: '0x...' });
-   *
-   * // List contacts
-   * const contacts = await userDialer.contacts.getAll();
-   *
-   * // Listen for changes
-   * userDialer.contacts.on('contact:added', ({ contact }) => {
-   *   console.log('Added:', contact.walletAddress);
-   * });
-   * ```
-   */
-  contacts;
   constructor(http, session, contactsProvider, contactsConfig, authService) {
+    __publicField(this, "http");
+    __publicField(this, "session");
+    __publicField(this, "events");
+    /** @internal */
+    __publicField(this, "authService");
+    /**
+     * Calls service - wallet-to-wallet audio/video calling
+     *
+     * @remarks
+     * - `start()`, `answer()`, `decline()`, `end()` - Isomorphic
+     * - `getLocalStream()`, `getRemoteStream()` - Browser only
+     *
+     * @example
+     * ```typescript
+     * // Start a video call
+     * const call = await userDialer.calls.start({
+     *   to: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+     *   type: 'video'
+     * });
+     * ```
+     */
+    __publicField(this, "calls");
+    /**
+     * Chat service - E2EE DMs and Groups
+     *
+     * @remarks
+     * All methods are isomorphic and work in both browser and Node.js.
+     * Uses Signal Protocol for DMs and Sender Keys for Groups.
+     *
+     * @example
+     * ```typescript
+     * // Send a message
+     * await userDialer.chat.send({
+     *   to: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+     *   content: 'Hello!'
+     * });
+     *
+     * // Create a DM
+     * const dm = await userDialer.chat.createDM({
+     *   otherDialUserId: '0x...'
+     * });
+     *
+     * // Create a group
+     * const group = await userDialer.chat.createGroup({
+     *   name: 'My Group',
+     *   participants: ['0x...', '0x...']
+     * });
+     * ```
+     */
+    __publicField(this, "chat");
+    /**
+     * Messages service - wallet-to-wallet messaging
+     * @deprecated Use chat instead
+     */
+    __publicField(this, "messages");
+    /**
+     * Profile service - manage user profiles
+     *
+     * @remarks
+     * All methods are isomorphic except `updateAvatar()` which uses File API.
+     *
+     * @example
+     * ```typescript
+     * // Get current profile
+     * const profile = await userDialer.profile.get();
+     * ```
+     */
+    __publicField(this, "profile");
+    /**
+     * Voicemail service - manage voicemails
+     *
+     * @remarks
+     * - `getAll()`, `get()`, `markAsRead()`, `transcribe()` - Isomorphic
+     * - `download()` - Browser only (uses Blob)
+     *
+     * @example
+     * ```typescript
+     * // Get all voicemails
+     * const voicemails = await userDialer.voicemail.getAll();
+     * ```
+     */
+    __publicField(this, "voicemail");
+    /**
+     * Conference service - video conferencing
+     *
+     * @remarks
+     * - Room management methods are isomorphic
+     * - Media streaming methods are browser only
+     *
+     * @example
+     * ```typescript
+     * // Create a conference room
+     * const room = await userDialer.conference.create({
+     *   name: 'Team Standup',
+     *   maxParticipants: 10
+     * });
+     * ```
+     */
+    __publicField(this, "conference");
+    /**
+     * Contacts book - manage user contacts
+     *
+     * @remarks
+     * Uses LocalContactsBookProvider by default (localStorage in browser).
+     * Supply a custom IContactsBookProvider via `setContactsProvider()` to
+     * use API-backed or custom storage.
+     *
+     * @example
+     * ```typescript
+     * // Add a contact
+     * await userDialer.contacts.add({ walletAddress: '0x...' });
+     *
+     * // List contacts
+     * const contacts = await userDialer.contacts.getAll();
+     *
+     * // Listen for changes
+     * userDialer.contacts.on('contact:added', ({ contact }) => {
+     *   console.log('Added:', contact.walletAddress);
+     * });
+     * ```
+     */
+    __publicField(this, "contacts");
     this.http = http;
     this.session = session;
     this.events = new DialEventEmitter();
     this.http.setAuthToken(session.token);
-    this.authService = authService ?? new AuthService(http);
+    this.authService = authService != null ? authService : new AuthService(http);
     this.calls = new CallsService(http);
     this.chat = new ChatService(http);
     this.messages = this.chat;
@@ -1390,11 +1423,11 @@ var UserDialer = class {
     if (session.refreshToken) {
       this.http.setSessionRefresher(async () => {
         const newSession = await this.authService.refreshSession(this.session);
-        this.session = { ...this.session, ...newSession };
+        this.session = __spreadValues(__spreadValues({}, this.session), newSession);
         return newSession.token;
       });
     }
-    const provider = contactsProvider ?? new LocalContactsBookProvider({
+    const provider = contactsProvider != null ? contactsProvider : new LocalContactsBookProvider({
       walletAddress: session.walletAddress
     });
     this.contacts = new ContactsBook(provider, contactsConfig);
@@ -1437,7 +1470,7 @@ var UserDialer = class {
    * ```
    */
   exportSession() {
-    return { ...this.session };
+    return __spreadValues({}, this.session);
   }
   /**
    * Logout and invalidate the session
@@ -1483,67 +1516,65 @@ var UserDialer = class {
 
 // src/client/dial-client.ts
 var DialClient = class {
-  /** SDK version */
-  static version = SDK_VERSION;
-  config;
-  http;
-  /**
-   * Authentication service
-   *
-   * @remarks
-   * Isomorphic - works in both browser and Node.js
-   *
-   * @example
-   * ```typescript
-   * // Get nonce for SIWE message
-   * const nonce = await dial.auth.getNonce();
-   * ```
-   */
-  auth;
-  /**
-   * Party Lines service - query and create party lines
-   *
-   * @remarks
-   * Isomorphic - works in both browser and Node.js
-   * Read operations don't require authentication.
-   * Write operations require an API key.
-   *
-   * @example
-   * ```typescript
-   * // Get active party lines (no auth required)
-   * const partyLines = await dial.partyLines.getActive();
-   *
-   * // Create party line (requires API key)
-   * const room = await dial.partyLines.create({
-   *   owner: '0x...',
-   *   name: 'My Room'
-   * });
-   * ```
-   */
-  partyLines;
-  /**
-   * Registry service - public registry features
-   *
-   * @remarks
-   * Isomorphic - works in both browser and Node.js
-   * No authentication required.
-   *
-   * @example
-   * ```typescript
-   * // Search profiles
-   * const profiles = await dial.registry.searchProfiles({ query: 'alice' });
-   *
-   * // Get profile by ENS
-   * const profile = await dial.registry.getProfileByENS('alice.eth');
-   * ```
-   */
-  registry;
   /**
    * Create a new DialClient instance
    *
    * @param config - Client configuration options
    */
   constructor(config = {}) {
+    __publicField(this, "config");
+    __publicField(this, "http");
+    /**
+     * Authentication service
+     *
+     * @remarks
+     * Isomorphic - works in both browser and Node.js
+     *
+     * @example
+     * ```typescript
+     * // Get nonce for SIWE message
+     * const nonce = await dial.auth.getNonce();
+     * ```
+     */
+    __publicField(this, "auth");
+    /**
+     * Party Lines service - query and create party lines
+     *
+     * @remarks
+     * Isomorphic - works in both browser and Node.js
+     * Read operations don't require authentication.
+     * Write operations require an API key.
+     *
+     * @example
+     * ```typescript
+     * // Get active party lines (no auth required)
+     * const partyLines = await dial.partyLines.getActive();
+     *
+     * // Create party line (requires API key)
+     * const room = await dial.partyLines.create({
+     *   owner: '0x...',
+     *   name: 'My Room'
+     * });
+     * ```
+     */
+    __publicField(this, "partyLines");
+    /**
+     * Registry service - public registry features
+     *
+     * @remarks
+     * Isomorphic - works in both browser and Node.js
+     * No authentication required.
+     *
+     * @example
+     * ```typescript
+     * // Search profiles
+     * const profiles = await dial.registry.searchProfiles({ query: 'alice' });
+     *
+     * // Get profile by ENS
+     * const profile = await dial.registry.getProfileByENS('alice.eth');
+     * ```
+     */
+    __publicField(this, "registry");
     this.config = this.resolveConfig(config);
     this.http = new HttpClient(this.config);
     this.auth = new AuthService(this.http);
@@ -1554,14 +1585,15 @@ var DialClient = class {
    * Resolve configuration with defaults
    */
   resolveConfig(config) {
-    const network = config.network ?? DEFAULT_NETWORK;
-    const baseUrl = config.baseUrl ?? API_BASE_URLS[network];
+    var _a, _b, _c, _d, _e;
+    const network = (_a = config.network) != null ? _a : DEFAULT_NETWORK;
+    const baseUrl = (_b = config.baseUrl) != null ? _b : API_BASE_URLS[network];
     return {
       apiKey: config.apiKey,
       baseUrl,
-      timeout: config.timeout ?? 3e4,
-      debug: config.debug ?? false,
-      fetch: config.fetch ?? getFetch()
+      timeout: (_c = config.timeout) != null ? _c : 3e4,
+      debug: (_d = config.debug) != null ? _d : false,
+      fetch: (_e = config.fetch) != null ? _e : getFetch()
     };
   }
   /**
@@ -1639,10 +1671,11 @@ var DialClient = class {
    * ```
    */
   async authenticateWithWallet(options) {
+    var _a, _b;
     const address = await options.wallet.getAddress();
     const nonce = await this.auth.getNonce(address);
-    const domain = options.domain ?? this.detectDomain();
-    const uri = options.uri ?? this.detectUri();
+    const domain = (_a = options.domain) != null ? _a : this.detectDomain();
+    const uri = (_b = options.uri) != null ? _b : this.detectUri();
     const issuedAt = (/* @__PURE__ */ new Date()).toISOString();
     const message = [
       `${domain} wants you to sign in with your Ethereum account:`,
@@ -1676,10 +1709,11 @@ var DialClient = class {
    * ```
    */
   async authenticateWithSolana(options) {
+    var _a, _b;
     const address = options.wallet.publicKey.toBase58();
     const nonce = await this.auth.getNonce(address);
-    const domain = options.domain ?? this.detectDomain();
-    const uri = options.uri ?? this.detectUri();
+    const domain = (_a = options.domain) != null ? _a : this.detectDomain();
+    const uri = (_b = options.uri) != null ? _b : this.detectUri();
     const issuedAt = (/* @__PURE__ */ new Date()).toISOString();
     const message = [
       `${domain} wants you to sign in with your Solana account:`,
@@ -1710,13 +1744,13 @@ var DialClient = class {
     const env = detectEnvironment();
     if (env === "extension") {
       const chrome = globalThis["chrome"];
-      const runtime = chrome?.["runtime"];
-      const id = runtime?.["id"];
+      const runtime = chrome == null ? void 0 : chrome["runtime"];
+      const id = runtime == null ? void 0 : runtime["id"];
       if (id) return `chrome-extension://${id}`;
     }
     if (env === "browser") {
       const location = globalThis["location"];
-      if (location?.hostname) return location.hostname;
+      if (location == null ? void 0 : location.hostname) return location.hostname;
     }
     return "dial.wtf";
   }
@@ -1728,13 +1762,13 @@ var DialClient = class {
     const env = detectEnvironment();
     if (env === "extension") {
       const chrome = globalThis["chrome"];
-      const runtime = chrome?.["runtime"];
-      const id = runtime?.["id"];
+      const runtime = chrome == null ? void 0 : chrome["runtime"];
+      const id = runtime == null ? void 0 : runtime["id"];
       if (id) return `chrome-extension://${id}`;
     }
     if (env === "browser") {
       const location = globalThis["location"];
-      if (location?.origin) return location.origin;
+      if (location == null ? void 0 : location.origin) return location.origin;
     }
     return "https://dial.wtf";
   }
@@ -1763,13 +1797,16 @@ var DialClient = class {
     return result;
   }
 };
+/** SDK version */
+__publicField(DialClient, "version", SDK_VERSION);
 var ApiContactsBookProvider = class {
-  http;
-  apiVersion;
   constructor(httpOrConfig, apiVersion) {
+    __publicField(this, "http");
+    __publicField(this, "apiVersion");
+    var _a;
     if (httpOrConfig instanceof HttpClient) {
       this.http = httpOrConfig;
-      this.apiVersion = apiVersion ?? "v1";
+      this.apiVersion = apiVersion != null ? apiVersion : "v1";
     } else {
       const config = {
         baseUrl: httpOrConfig.baseUrl,
@@ -1780,17 +1817,18 @@ var ApiContactsBookProvider = class {
       };
       this.http = new HttpClient(config);
       this.http.setAuthToken(httpOrConfig.token);
-      this.apiVersion = httpOrConfig.apiVersion ?? "v1";
+      this.apiVersion = (_a = httpOrConfig.apiVersion) != null ? _a : "v1";
     }
   }
   async getAll(params) {
-    return this.http.get(this.endpoint("/profile/contacts"), params ? { ...params } : void 0);
+    return this.http.get(this.endpoint("/profile/contacts"), params ? __spreadValues({}, params) : void 0);
   }
   async get(walletAddress) {
+    var _a;
     try {
       const contacts = await this.getAll();
-      return contacts.find((c) => c.walletAddress.toLowerCase() === walletAddress.toLowerCase()) ?? null;
-    } catch {
+      return (_a = contacts.find((c) => c.walletAddress.toLowerCase() === walletAddress.toLowerCase())) != null ? _a : null;
+    } catch (e) {
       return null;
     }
   }

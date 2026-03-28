@@ -233,6 +233,9 @@ env:
   - FILE_NAMES
 
   # This variable is read by Trezor's source and breaks build if not included
+  # Dial SDK API key for wallet-to-wallet communication
+  - DIAL_API_KEY: null
+
   - ASSET_PREFIX: null
   - SUITE_TYPE: null
   - COMMITHASH: null

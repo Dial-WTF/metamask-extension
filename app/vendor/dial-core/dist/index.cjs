@@ -1,6 +1,9 @@
 'use strict';
 
 /* @dial-wtf/core - Platform-agnostic types and interfaces */
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
 // src/types/client.ts
 var SDK_VERSION = "0.3.0";
@@ -15,11 +18,11 @@ var DEFAULT_NETWORK = "alpha";
 
 // src/errors.ts
 var DialError = class _DialError extends Error {
-  code;
-  statusCode;
-  details;
   constructor(message, code, statusCode, details) {
     super(message);
+    __publicField(this, "code");
+    __publicField(this, "statusCode");
+    __publicField(this, "details");
     this.name = "DialError";
     this.code = code;
     this.statusCode = statusCode;
@@ -38,24 +41,25 @@ var DialError = class _DialError extends Error {
 };
 var AuthError = class _AuthError extends DialError {
   constructor(message, code, details) {
-    super(message, code ?? "AUTH_ERROR", 401, details);
+    super(message, code != null ? code : "AUTH_ERROR", 401, details);
     this.name = "AuthError";
     Object.setPrototypeOf(this, _AuthError.prototype);
   }
 };
 var ApiError = class _ApiError extends DialError {
   constructor(message, statusCode, code, details) {
-    super(message, code ?? "API_ERROR", statusCode, details);
+    super(message, code != null ? code : "API_ERROR", statusCode, details);
     this.name = "ApiError";
     Object.setPrototypeOf(this, _ApiError.prototype);
   }
   static fromResponse(status, body) {
+    var _a, _b, _c;
     if (typeof body === "object" && body !== null) {
       const errorBody = body;
       return new _ApiError(
-        String(errorBody["error"] ?? errorBody["message"] ?? "Unknown API error"),
+        String((_b = (_a = errorBody["error"]) != null ? _a : errorBody["message"]) != null ? _b : "Unknown API error"),
         status,
-        String(errorBody["code"] ?? "API_ERROR"),
+        String((_c = errorBody["code"]) != null ? _c : "API_ERROR"),
         errorBody["details"]
       );
     }
@@ -71,24 +75,24 @@ var NetworkError = class _NetworkError extends DialError {
 };
 var TimeoutError = class _TimeoutError extends DialError {
   constructor(message) {
-    super(message ?? "Request timed out", "TIMEOUT_ERROR", 408);
+    super(message != null ? message : "Request timed out", "TIMEOUT_ERROR", 408);
     this.name = "TimeoutError";
     Object.setPrototypeOf(this, _TimeoutError.prototype);
   }
 };
 var ValidationError = class _ValidationError extends DialError {
-  field;
   constructor(message, field, details) {
     super(message, "VALIDATION_ERROR", 400, details);
+    __publicField(this, "field");
     this.name = "ValidationError";
     this.field = field;
     Object.setPrototypeOf(this, _ValidationError.prototype);
   }
 };
 var RateLimitError = class _RateLimitError extends DialError {
-  retryAfter;
   constructor(message, retryAfter) {
-    super(message ?? "Rate limit exceeded", "RATE_LIMIT_ERROR", 429);
+    super(message != null ? message : "Rate limit exceeded", "RATE_LIMIT_ERROR", 429);
+    __publicField(this, "retryAfter");
     this.name = "RateLimitError";
     this.retryAfter = retryAfter;
     Object.setPrototypeOf(this, _RateLimitError.prototype);
@@ -111,7 +115,7 @@ var NotFoundError = class _NotFoundError extends DialError {
 var PermissionDeniedError = class _PermissionDeniedError extends DialError {
   constructor(message, requiredPermission) {
     super(
-      message ?? "Permission denied",
+      message != null ? message : "Permission denied",
       "PERMISSION_DENIED",
       403,
       requiredPermission ? { requiredPermission } : void 0
@@ -123,9 +127,12 @@ var PermissionDeniedError = class _PermissionDeniedError extends DialError {
 
 // src/interfaces/storage.ts
 var MemoryStorage = class {
-  store = /* @__PURE__ */ new Map();
+  constructor() {
+    __publicField(this, "store", /* @__PURE__ */ new Map());
+  }
   async getItem(key) {
-    return this.store.get(key) ?? null;
+    var _a;
+    return (_a = this.store.get(key)) != null ? _a : null;
   }
   async setItem(key, value) {
     this.store.set(key, value);
@@ -139,18 +146,22 @@ var BrowserStorage = class {
     return globalThis["localStorage"];
   }
   async getItem(key) {
-    return this._storage?.getItem(key) ?? null;
+    var _a, _b;
+    return (_b = (_a = this._storage) == null ? void 0 : _a.getItem(key)) != null ? _b : null;
   }
   async setItem(key, value) {
-    this._storage?.setItem(key, value);
+    var _a;
+    (_a = this._storage) == null ? void 0 : _a.setItem(key, value);
   }
   async removeItem(key) {
-    this._storage?.removeItem(key);
+    var _a;
+    (_a = this._storage) == null ? void 0 : _a.removeItem(key);
   }
 };
 
 // src/utils/environment.ts
 function detectEnvironment() {
+  var _a, _b, _c;
   if (typeof globalThis !== "undefined" && typeof globalThis["chrome"] !== "undefined") {
     const chrome = globalThis["chrome"];
     if (chrome && typeof chrome["runtime"] === "object" && chrome["runtime"] !== null) {
@@ -163,7 +174,7 @@ function detectEnvironment() {
   if (typeof globalThis["window"] !== "undefined" && typeof globalThis["document"] !== "undefined") {
     return "browser";
   }
-  if (typeof globalThis["process"] !== "undefined" && globalThis["process"]?.["versions"] != null && globalThis["process"]?.["versions"]?.["node"] != null) {
+  if (typeof globalThis["process"] !== "undefined" && ((_a = globalThis["process"]) == null ? void 0 : _a["versions"]) != null && ((_c = (_b = globalThis["process"]) == null ? void 0 : _b["versions"]) == null ? void 0 : _c["node"]) != null) {
     return "node";
   }
   return "unknown";

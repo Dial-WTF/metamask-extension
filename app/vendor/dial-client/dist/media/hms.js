@@ -1,14 +1,16 @@
 import { HMSReactiveStore, selectPeers, selectLocalPeer, HMSRoomState, selectRoomState } from '@100mslive/hms-video-store';
 
 /* @dial-wtf/client - Universal TypeScript SDK */
-
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 var HMSMediaProvider = class {
-  hmsStore;
-  hmsActions;
-  listeners = /* @__PURE__ */ new Map();
-  unsubscribers = [];
-  connectionState = "disconnected";
   constructor() {
+    __publicField(this, "hmsStore");
+    __publicField(this, "hmsActions");
+    __publicField(this, "listeners", /* @__PURE__ */ new Map());
+    __publicField(this, "unsubscribers", []);
+    __publicField(this, "connectionState", "disconnected");
     const hms = new HMSReactiveStore();
     this.hmsStore = hms.getStore();
     this.hmsActions = hms.getActions();
@@ -22,8 +24,8 @@ var HMSMediaProvider = class {
         authToken: credentials.authToken,
         userName: credentials.userName,
         settings: {
-          isAudioMuted: config?.initialAudio === false,
-          isVideoMuted: config?.initialVideo !== true
+          isAudioMuted: (config == null ? void 0 : config.initialAudio) === false,
+          isVideoMuted: (config == null ? void 0 : config.initialVideo) !== true
         }
       });
       this.connectionState = "connected";
@@ -96,7 +98,8 @@ var HMSMediaProvider = class {
     this.listeners.get(event).add(callback);
   }
   off(event, callback) {
-    this.listeners.get(event)?.delete(callback);
+    var _a;
+    (_a = this.listeners.get(event)) == null ? void 0 : _a.delete(callback);
   }
   // -- Private helpers --------------------------------------------------------
   emit(event, payload) {
@@ -151,10 +154,11 @@ var HMSMediaProvider = class {
     this.unsubscribers = [];
   }
   mapPeer(hmsPeer) {
+    var _a;
     return {
       id: hmsPeer.id,
       name: hmsPeer.name,
-      role: hmsPeer.roleName ?? "",
+      role: (_a = hmsPeer.roleName) != null ? _a : "",
       isLocal: hmsPeer.isLocal,
       audioTrack: hmsPeer.audioTrack ? this.mapTrack(hmsPeer.audioTrack, hmsPeer.id, "audio") : void 0,
       videoTrack: hmsPeer.videoTrack ? this.mapTrack(hmsPeer.videoTrack, hmsPeer.id, "video") : void 0,
